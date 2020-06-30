@@ -1,0 +1,3 @@
+[submodule "3rd-party/ocp4-upi-helpernode"]
+	path = 3rd-party/ocp4-upi-helpernode
+	url = https://github.com/RedHatOfficial/ocp4-helpernode.git

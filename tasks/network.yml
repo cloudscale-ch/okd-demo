@@ -1,0 +1,18 @@
+# The network configuration used for this cluster, shared between playbooks.
+
+- name: Create Private Network
+  network:
+    name: '{{ dns.clusterid }}-network'
+    zone: '{{ zone }}'
+    mtu: 9000
+    auto_create_ipv4_subnet: no
+  register: private_network
+
+- name: Create Private Subnet
+  subnet:
+    cidr: '{{ dhcp.ipid }}/24'
+    gateway_address: '{{ gw.ipaddr }}'
+    dns_servers: '{{ helper.ipaddr }}'
+    network:
+      uuid: '{{ private_network["uuid"] }}'
+  register: private_subnet

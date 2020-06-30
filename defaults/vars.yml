@@ -1,0 +1,42 @@
+---
+staticips: true
+zone: "lpg1"
+gw:
+  name: "gw"
+  ipaddr: "192.168.7.1"
+  password: "_____REPLACE___"
+helper:
+  name: "helper"
+  ipaddr: "192.168.7.77"
+dns:
+  domain: "example.com"
+  clusterid: "okd"
+  forwarder1: "8.8.8.8"
+  forwarder2: "8.8.4.4"
+dhcp:
+  ipid: "192.168.7.0"
+bootstrap:
+  name: "bootstrap"
+  ipaddr: "192.168.7.20"
+masters:
+  - name: "master0"
+    ipaddr: "192.168.7.21"
+  - name: "master1"
+    ipaddr: "192.168.7.22"
+  - name: "master2"
+    ipaddr: "192.168.7.23"
+workers:
+  - name: "worker0"
+    ipaddr: "192.168.7.11"
+  - name: "worker1"
+    ipaddr: "192.168.7.12"
+  - name: "worker2"
+    ipaddr: "192.168.7.13"
+other:
+  - name: "non-cluster-vm"
+    ipaddr: "192.168.7.31"
+pull_secret: '{"auths": _____REPLACE___ }'
+ssh_key: 'ssh-ed25519 AAAA_____REPLACE___ me@host'
+ssh_gen_key: false
+ocp_client: "https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz"
+ocp_installer: "https://github.com/openshift/okd/releases/download/4.6.0-0.okd-2021-02-14-205305/openshift-install-linux-4.6.0-0.okd-2021-02-14-205305.tar.gz"

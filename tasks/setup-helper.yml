@@ -1,0 +1,16 @@
+# Configures the helper node, a step that could probably be more automated
+# more than it currently is.
+
+- name: Run the ocp4-upi-helpernode playbook
+  import_playbook: ../3rd-party/ocp4-upi-helpernode/tasks/main.yml
+
+- hosts: all
+  tasks:
+    - name: Create okd directory
+      file:
+        path: ~/okd
+        state: directory
+    - name: Write out install-config.yaml file
+      template:
+        src: ../templates/install-config.yaml.j2
+        dest: ~/okd/install-config.yaml

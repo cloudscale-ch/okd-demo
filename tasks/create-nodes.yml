@@ -1,0 +1,80 @@
+# Creates the bootstrap node (may be deleted once the cluster is operational),
+# as well as the master and worker nodes, which are kept in anti-affinity
+# groups to ensure that they are not started on the same physical machines.
+
+- name: Create the OKD Cluster Nodes
+  hosts: localhost
+  collections:
+    - cloudscale_ch.cloud
+
+  tasks:
+    - import_tasks: 'network.yml'
+
+    - name: Create Bootstrap Node
+      server:
+        name: '{{ bootstrap.name | lower }}.{{ dns.clusterid }}.{{ dns.domain | lower }}'
+        zone: '{{ zone }}'
+        flavor: plus-16
+        image: fcos-33
+        volume_size_gb: 120
+        user_data: "{{ lookup('template', '../templates/ignition.ign.j2') | to_json }}"
+        ssh_keys: '{{ ssh_key }}'
+        interfaces:
+          - network: '{{ private_network["uuid"] }}'
+            addresses:
+            - subnet: '{{ private_subnet["uuid"] }}'
+              address: '{{ bootstrap.ipaddr }}'
+      vars:
+        role: bootstrap
+
+    - name: Create Master Nodes Group
+      server_group:
+        name: '{{ dns.clusterid }}-master-nodes'
+        type: 'anti-affinity'
+        zone: '{{ zone }}'
+      register: master_nodes_group
+
+    - name: Create Master Nodes
+      vars:
+        role: master
+      server:
+        name: '{{ item.name }}.{{ dns.clusterid }}.{{ dns.domain | lower }}'
+        zone: '{{ zone }}'
+        flavor: plus-16
+        image: fcos-33
+        volume_size_gb: 120
+        user_data: "{{ lookup('template', '../templates/ignition.ign.j2') | to_json }}"
+        ssh_keys: '{{ ssh_key }}'
+        server_groups: '{{ master_nodes_group["uuid"] }}'
+        interfaces:
+          - network: '{{ private_network["uuid"] }}'
+            addresses:
+            - subnet: '{{ private_subnet["uuid"] }}'
+              address: '{{ item.ipaddr }}'
+      loop: '{{ masters }}'
+
+    - name: Create Worker Nodes Group
+      server_group:
+        name: '{{ dns.clusterid }}-worker-nodes'
+        type: 'anti-affinity'
+        zone: '{{ zone }}'
+      register: worker_nodes_group
+
+    - name: Create Worker Nodes
+      vars:
+        role: worker
+      server:
+        name: '{{ item.name }}.{{ dns.clusterid }}.{{ dns.domain | lower }}'
+        zone: '{{ zone }}'
+        flavor: plus-16
+        image: fcos-33
+        volume_size_gb: 120
+        user_data: "{{ lookup('template', '../templates/ignition.ign.j2') | to_json }}"
+        ssh_keys: '{{ ssh_key }}'
+        server_groups: '{{ worker_nodes_group["uuid"] }}'
+        interfaces:
+          - network: '{{ private_network["uuid"] }}'
+            addresses:
+            - subnet: '{{ private_subnet["uuid"] }}'
+              address: '{{ item.ipaddr }}'
+      loop: '{{ workers }}'

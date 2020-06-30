@@ -1,0 +1,40 @@
+# Creates the hosts that have a public interface, and are therefore directly
+# exposed to the Internet.
+
+- name: Create the OKD Cluster Infrastructure
+  hosts: localhost
+  collections:
+    - cloudscale_ch.cloud
+
+  tasks:
+    - import_tasks: 'network.yml'
+
+    - name: Create Gateway
+      server:
+        name: '{{ gw.name | lower }}.{{ dns.clusterid }}.{{ dns.domain | lower }}'
+        zone: '{{ zone }}'
+        flavor: plus-16
+        image: pfsense-2.5.0
+        volume_size_gb: 10
+        password: '{{ gw.password }}'
+        interfaces:
+          - network: 'public'
+          - network: '{{ private_network["uuid"] }}'
+            addresses:
+            - subnet: '{{ private_subnet["uuid"] }}'
+              address: '{{ gw.ipaddr }}'
+
+    - name: Create Helper
+      server:
+        name: '{{ helper.name | lower }}.{{ dns.clusterid }}.{{ dns.domain | lower }}'
+        zone: '{{ zone }}'
+        flavor: plus-16
+        image: centos-8
+        volume_size_gb: 150
+        ssh_keys: '{{ ssh_key }}'
+        interfaces:
+          - network: 'public'
+          - network: '{{ private_network["uuid"] }}'
+            addresses:
+              - subnet: '{{ private_subnet["uuid"] }}'
+                address: '{{ helper.ipaddr }}'
